@@ -1,0 +1,11 @@
+//
+// Created by Moskovskaya Elizaveta on 24/07/2018.
+//
+
+#ifndef BCH_KANEKOCONFIG_H
+#define BCH_KANEKOCONFIG_H
+
+#define kaneko_VERSION_MAJOR @kaneko_VERSION_MAJOR@
+#define kaneko_VERSION_MINOR @kaneko_VERSION_MINOR@
+
+#endif //BCH_KANEKOCONFIG_H
