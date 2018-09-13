@@ -187,7 +187,7 @@ void Decoder::findSyndromPoly(const unsigned char *word)  {
     memcpy(oldPoly, word, n * sizeof(*word));
 }
 
-
+//TODO: simplify
 void Decoder::alterSyndromPoly(const unsigned char *word) {
     for (int i = 0; i < n; ++i){
         if (oldPoly[i] != word[i]) {

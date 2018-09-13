@@ -132,13 +132,13 @@ void KanekoKernelProcessor::set(const double *word) const {
 void KanekoKernelProcessor::decode(unsigned char *res) {
     long j = 0;
     long i = 0;
-    long T = LONG_MAX;
+    uint64_t T = LONG_MAX;
     double l = 0;
     double l0 = DBL_MAX;
     bool success;
     bool firstDecodingSuccessful = true;
     decoder.findSyndromPoly(yH);
-    while (i < ((T == LONG_MAX) ? LONG_MAX : (1 << T))) {
+    while (i < ((T == LONG_MAX) ? LONG_MAX : (uint64_t(1) << T))) {
         calcError(i);
         for (long k = 0; k < n; ++k) {
             err[k] ^= yH[k];
@@ -188,13 +188,13 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
 
     long j = 0;
     long i = 0;
-    long T = LONG_MAX;
+    uint64_t T = LONG_MAX;
     double l = 0;
     double l0 = DBL_MAX;
     bool success;
     bool firstDecodingSuccessful = true;
     decoder.findSyndromPoly(yH);
-    while (i < ((T == LONG_MAX) ? LONG_MAX : (1 << T))) {
+    while (i < ((T == LONG_MAX) ? LONG_MAX : (uint64_t(1) << T))) {
         calcError(i);
         for (long k = 0; k < n; ++k) {
             err[k] ^= yH[k];
@@ -255,6 +255,14 @@ unsigned long KanekoKernelProcessor::getDecodingCount() const {
 
 void KanekoKernelProcessor::setDecodingCount(unsigned long c) {
     decodingCount = c;
+}
+
+void KanekoKernelProcessor::setComparisonCount(unsigned long comparisonCount) {
+    KanekoKernelProcessor::comparisonCount = comparisonCount;
+}
+
+void KanekoKernelProcessor::setSummCount(unsigned long summCount) {
+    KanekoKernelProcessor::summCount = summCount;
 }
 
 /*void* KanekoKernelProcessor::GetState(unsigned Stride) const {

@@ -56,9 +56,13 @@ public:
     unsigned long getSummCount() const;
     unsigned long getDecodingCount() const;
     void setDecodingCount(unsigned long c = 0);
+    void setComparisonCount(unsigned long comparisonCount = 0);
+    void setSummCount(unsigned long summCount = 0);
     //virtual void* GetState(unsigned Stride)const;
 
     virtual const char* GetName()const { return "KanekoProcessor"; }
+
+
 
 };
 

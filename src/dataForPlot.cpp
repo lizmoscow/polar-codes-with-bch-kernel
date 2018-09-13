@@ -10,7 +10,7 @@
 #include "../headers/KanekoKernelProcessor.h"
 #include "../headers/bchCoder.h"
 
-//#define DEBUG
+#define DEBUG
 
 void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned char *g, unsigned long gSize, long p, long e, double maxSTNR = 5.0) {
 
@@ -24,11 +24,17 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
     auto decoded = new unsigned char[decoder.getN()];
     unsigned long wordCount = 0;
 
-    std::ofstream fout1;
-    fout1.open(file + ".csv");
+    std::ofstream fout;
+    fout.open(file + ".csv");
 
-    std::ofstream fout2;
-    fout2.open(file + "_t.csv");
+    /*std::ofstream foutT;
+    foutT.open(file + "_t.csv");
+
+    std::ofstream foutC;
+    foutC.open(file + "_c.csv");
+
+    std::ofstream foutS;
+    foutS.open(file + "_s.csv");*/
 
     clock_t start, end;
     start = clock();
@@ -69,9 +75,20 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
             ++count;
             ++wordCount;
         }
-        fout1 << stnr << "," << ((double)countErr)/count << "\n";
-        fout2 << stnr << "," << ((double) decoder.getDecodingCount()) / wordCount << "\n";
+
+        fout << stnr << "," << ((double)countErr)/count
+                     << "," << ((double) decoder.getDecodingCount()) / wordCount
+                     << "," << ((double) decoder.getComparisonCount()) / wordCount
+                     << "," << ((double) decoder.getSummCount()) / wordCount << "\n";
+
+        /*fout << stnr << "," << ((double)countErr)/count << "\n";
+        foutT << stnr << "," << ((double) decoder.getDecodingCount()) / wordCount << "\n";
+        foutC << stnr << "," << ((double) decoder.getComparisonCount()) / wordCount << "\n";
+        foutS << stnr << "," << ((double) decoder.getSummCount()) / wordCount << "\n";*/
+
         decoder.setDecodingCount();
+        decoder.setComparisonCount();
+        decoder.setSummCount();
         wordCount = 0;
         count = 0, countErr = 0;
 
@@ -87,8 +104,10 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
 
     std::cout << "Общее время: " << ((double) end - start) / (double) CLOCKS_PER_SEC << " секунд\n";
 
-    fout1.close();
-    fout2.close();
+    fout.close();
+    /*foutT.close();
+    foutC.close();
+    foutS.close();*/
 
     delete[] info;
     delete[] res;
