@@ -10,6 +10,7 @@
 #include "Decoder.h"
 //#include "external/KernProc.h"
 
+
 class KanekoKernelProcessor /*: CKernProcLLR*/ {
 
 private:
@@ -34,9 +35,11 @@ private:
 
     void calcError(long i);
     long calcM();
+    long calcM(const unsigned long *answer);
     double calcL() const;
     double calcRightSide() const;
     double calcT(long j);
+    double calcT(const unsigned long *answer, long j);
 
 public:
 
@@ -45,6 +48,7 @@ public:
 
     void decode(unsigned char *res);
     void decode(const double *word, unsigned char *res);
+    void decode(const unsigned char *answer, const double *word, unsigned char *res);
     void set(const double *word) const;
 
     long getN() const;

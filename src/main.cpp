@@ -6,7 +6,6 @@
 #include <iostream>
 #include <cmath>
 #include <climits>
-#include <err.h>
 #include <fstream>
 #include "../headers/bchCoder.h"
 #include "../headers/KanekoKernelProcessor.h"

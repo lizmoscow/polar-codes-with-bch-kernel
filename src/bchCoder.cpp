@@ -11,7 +11,7 @@
 
 auto seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::default_random_engine generator(seed);
-std::uniform_int_distribution<unsigned char> distribution(0, 1);
+std::uniform_int_distribution<unsigned short> distribution(0, 1);
 
 
 void findMinimalPolynomial(int i, int power, const unsigned long * fieldElements, int *size, unsigned char * res) {
@@ -82,14 +82,14 @@ void findMinimalPolynomial(int i, int power, const unsigned long * fieldElements
     //return res;
 }
 
-bool isZero(const unsigned char* poly, int size) {
+/*bool isZero(const unsigned char* poly, int size) {
     for (int i = 0; i < size; ++i) {
         if (poly[i]) {
             return false;
         }
     }
     return true;
-}
+}*/
 
 bool comparePoly(const unsigned char* poly1, int size1, const unsigned char* poly2, int size2) {
     if (size1 != size2) {
@@ -103,7 +103,7 @@ bool comparePoly(const unsigned char* poly1, int size1, const unsigned char* pol
     return true;
 }
 
-unsigned char* addPolynomial(const unsigned char* first, int size1, const unsigned char* second, int size2, int *sizeRes = nullptr) {
+/*unsigned char* addPolynomial(const unsigned char* first, int size1, const unsigned char* second, int size2, int *sizeRes = nullptr) {
     auto res = new unsigned char[std::max(size1, size2)];
     int m = std::min(size1, size2);
     for (int i = 0; i < m; ++i) {
@@ -123,7 +123,7 @@ unsigned char* addPolynomial(const unsigned char* first, int size1, const unsign
         *sizeRes = std::max(size1, size2);
     }
     return res;
-}
+}*/
 
 unsigned char* multiplyPolynomials(const unsigned char* first, int size1, const unsigned char* second, int size2, int *sizeRes) {
     auto res = new unsigned char[size1 + size2 - 1];
@@ -249,26 +249,17 @@ unsigned char* lcm(const unsigned char* first, int size1, const unsigned char* s
     return res;
 }
 
-unsigned long getPower(unsigned __int128 poly) {
-    unsigned long power = 0;
-    while (poly >= 1) {
-        ++power;
-        poly >>= 1;
-    }
-    return power;
-}
-
 unsigned char* generateRandomPoly(long k) {
     auto res = new unsigned char[k];
     for (int i = 0; i < k; ++i) {
-        res[i] = distribution(generator);
+        res[i] = (unsigned char)distribution(generator);
     }
     return res;
 }
 
 void generateRandomPoly(unsigned char *res, long k) {
     for (int i = 0; i < k; ++i) {
-        res[i] = distribution(generator);
+        res[i] = (unsigned char)distribution(generator);
     }
 }
 

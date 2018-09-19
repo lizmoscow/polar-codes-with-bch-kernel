@@ -6,6 +6,7 @@
 #include <cmath>
 #include <iostream>
 #include <cstring>
+#include <climits>
 #include "../headers/Decoder.h"
 
 Decoder::Decoder(long pw, long n, long t, long k, unsigned long *antilogarithms, unsigned long *logarithms):
@@ -60,13 +61,6 @@ Decoder::~Decoder() {
     delete[] res1;
 }
 
-unsigned long Decoder::multiply(unsigned long first, unsigned long second) const {
-    if (!first || !second) return 0;
-    auto temp = logarithms[first] + logarithms[second];
-    if (temp < n) return antilogarithms[temp];
-    return antilogarithms[temp - n];
-}
-
 unsigned long Decoder::divide(unsigned long first, unsigned long second) const {
     if (!first) return 0;
     auto temp = n + logarithms[first] - logarithms[second];
@@ -103,8 +97,13 @@ void Decoder::multiplyPolynomials(const unsigned long* first, int size1, const u
         result[i] = 0;
     }
     for (int i = 0; i < size1; ++i) {
+        auto logFirstI = logarithms[first[i]];
         for (int j = 0; j < size2; ++j) {
-            result[j + i] ^= multiply(first[i], second[j]);
+            if (logFirstI != LONG_MAX && second[j]) {
+                auto sum = logFirstI + logarithms[second[j]];
+                if (sum < n) result[j + i] ^= antilogarithms[sum];
+                else result[j + i] ^= antilogarithms[sum - n];
+            }
         }
     }
     *size = size1 + size2 - 1;
@@ -126,13 +125,21 @@ void Decoder::dividePolynomial(unsigned long* first, int *size1, unsigned long* 
 
     while (s >= s2) {
         shift[s - s2] = 1;
-        coeff = divide(f[s - 1], second[s2 - 1]);
-
-        for (int i = 0; i < *size2; ++i) {
-            f[s - s2 + i] ^= multiply(coeff, second[i]);
+        if (f[s - 1]) {
+            auto temp = n + logarithms[f[s - 1]] - logarithms[second[s2 - 1]];
+            if (temp < n) coeff = temp;
+            else coeff = temp - n;
         }
 
-        res1[s - s2] = coeff;
+        for (int i = 0; i < *size2; ++i) {
+            if (coeff != LONG_MAX && second[i]) {
+                auto sum = coeff + logarithms[second[i]];
+                if (sum < n) f[s - s2 + i] ^= antilogarithms[sum];
+                else f[s - s2 + i] ^= antilogarithms[sum - n];
+            }
+        }
+
+        res1[s - s2] = antilogarithms[coeff];
 
         shift[s - s2] = 0;
         while (s > 0 && f[s - 1] == 0) {
@@ -153,13 +160,22 @@ void Decoder::dividePolynomial(unsigned long* first, int *size1, unsigned long* 
     }
 }
 
+//TODO: find out how that works
 unsigned long Decoder::eval(const unsigned long *poly, int size, unsigned long elem) const {
     unsigned long value = poly[size - 1];
     if (size < 2 ) {
         return value;
     }
+    auto logElem = logarithms[elem];
     for (int i = size - 2; i >= 0; --i) {
-        value = multiply(value, elem) ^ poly[i];
+
+        if (value && logElem != LONG_MAX) {
+            auto sum = logElem + logarithms[value];
+            if (sum < n) value = antilogarithms[sum];
+            else value = antilogarithms[sum - n];
+        }
+        value ^= poly[i];
+        //value = multiply(value, elem) ^ poly[i];
     }
     return value;
 }
@@ -175,9 +191,13 @@ void Decoder::findSyndromPoly(const unsigned char *word)  {
 
     for (unsigned long i = 1; i <= l; ++i) {
         syndromPoly[i - 1] = word[start];
-        auto antilogI = antilogarithms[i];
         for (long j = start - 1; j >=0; --j) {
-            syndromPoly[i - 1] = ((unsigned long)word[j]) ^ multiply(antilogI, syndromPoly[i - 1]);
+            if (i != LONG_MAX && syndromPoly[i - 1]) {
+                auto sum = i + logarithms[syndromPoly[i - 1]];
+                if (sum < n) syndromPoly[i - 1] = antilogarithms[sum];
+                else syndromPoly[i - 1] = antilogarithms[sum - n];
+            }
+            syndromPoly[i - 1] ^= ((unsigned long)word[j]);
         }
         if (syndromPoly[i - 1]) {
             syndromPolySize = i;
@@ -187,13 +207,17 @@ void Decoder::findSyndromPoly(const unsigned char *word)  {
     memcpy(oldPoly, word, n * sizeof(*word));
 }
 
-//TODO: simplify
+
 void Decoder::alterSyndromPoly(const unsigned char *word) {
     for (int i = 0; i < n; ++i){
+        auto residual = logarithms[oldPoly[i] ^ word[i]];
         if (oldPoly[i] != word[i]) {
             for (int j = 1; j <= l; ++j) {
-                syndromPoly[j - 1] ^= multiply(oldPoly[i], antilogarithms[(j * i) % n]);
-                syndromPoly[j - 1] ^= multiply(word[i], antilogarithms[(j * i) % n]);
+                if (residual != LONG_MAX) {
+                    auto sum = residual + ((j * i) % n);
+                    if (sum < n) syndromPoly[j - 1] ^= antilogarithms[sum];
+                    else syndromPoly[j - 1] ^= antilogarithms[sum - n];
+                }
             }
         }
     }
@@ -308,4 +332,3 @@ long Decoder::getT() const {
 long Decoder::getK() const {
     return k;
 }
-

@@ -10,7 +10,7 @@
 #include "../headers/KanekoKernelProcessor.h"
 #include "../headers/bchCoder.h"
 
-#define DEBUG
+//#define DEBUG
 
 void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned char *g, unsigned long gSize, long p, long e, double maxSTNR = 5.0) {
 
@@ -55,7 +55,7 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
 
 
 #ifndef DEBUG
-            decoder.decode(err, decoded);
+            decoder.decode(res, err, decoded);
 #endif
 
 #ifdef DEBUG
