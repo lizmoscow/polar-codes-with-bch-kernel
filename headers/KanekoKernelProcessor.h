@@ -8,10 +8,9 @@
 
 #include <utility>
 #include "Decoder.h"
-//#include "external/KernProc.h"
 
 
-class KanekoKernelProcessor /*: CKernProcLLR*/ {
+class KanekoKernelProcessor {
 
 private:
     long n;
@@ -27,7 +26,6 @@ private:
     unsigned char *err;
     long m;
     long m0;
-    double state;
 
     unsigned long comparisonCount{0};
     unsigned long summCount{0};
@@ -43,7 +41,10 @@ private:
 
 public:
 
-    KanekoKernelProcessor(long pw, long n, long t, long k, unsigned long *antilogarithms, unsigned long *logarithms, double signalToNoiseRatio);
+    KanekoKernelProcessor(long pw, long n, long t, long k,
+                          unsigned long *antilogarithms,
+                          unsigned long *logarithms,
+                          double signalToNoiseRatio);
     virtual ~KanekoKernelProcessor();
 
     void decode(unsigned char *res);
@@ -62,12 +63,6 @@ public:
     void setDecodingCount(unsigned long c = 0);
     void setComparisonCount(unsigned long comparisonCount = 0);
     void setSummCount(unsigned long summCount = 0);
-    //virtual void* GetState(unsigned Stride)const;
-
-    virtual const char* GetName()const { return "KanekoProcessor"; }
-
-
-
 };
 
 

@@ -81,16 +81,6 @@ void findMinimalPolynomial(int i, int power, const unsigned long * fieldElements
 
     //return res;
 }
-
-/*bool isZero(const unsigned char* poly, int size) {
-    for (int i = 0; i < size; ++i) {
-        if (poly[i]) {
-            return false;
-        }
-    }
-    return true;
-}*/
-
 bool comparePoly(const unsigned char* poly1, int size1, const unsigned char* poly2, int size2) {
     if (size1 != size2) {
         return false;
@@ -102,28 +92,6 @@ bool comparePoly(const unsigned char* poly1, int size1, const unsigned char* pol
     }
     return true;
 }
-
-/*unsigned char* addPolynomial(const unsigned char* first, int size1, const unsigned char* second, int size2, int *sizeRes = nullptr) {
-    auto res = new unsigned char[std::max(size1, size2)];
-    int m = std::min(size1, size2);
-    for (int i = 0; i < m; ++i) {
-        res[i] = first[i] ^ second[i];
-    }
-    if (size1 > m) {
-        for (int i = m; i < size1; ++i) {
-            res[i] = first[i];
-        }
-    }
-    else {
-        for (int i = m; i < size2; ++i) {
-            res[i] = second[i];
-        }
-    }
-    if (sizeRes != nullptr) {
-        *sizeRes = std::max(size1, size2);
-    }
-    return res;
-}*/
 
 unsigned char* multiplyPolynomials(const unsigned char* first, int size1, const unsigned char* second, int size2, int *sizeRes) {
     auto res = new unsigned char[size1 + size2 - 1];
@@ -261,55 +229,6 @@ void generateRandomPoly(unsigned char *res, long k) {
     for (int i = 0; i < k; ++i) {
         res[i] = (unsigned char)distribution(generator);
     }
-}
-
-unsigned char* generateError(const unsigned char *codeword, long t, long n) {
-    //static std::default_random_engine generator;
-    static std::uniform_real_distribution<float> distribution(0, 1);
-    auto range = new int[n];
-    for (int i = 0; i < n; ++i) {
-        range[i] = i;
-    }
-    int count = 0;
-    int pos;
-    auto res = new unsigned char[n];
-    for (int i = 0; i < n; ++i) {
-        res[i] = codeword[i];
-    }
-    for (int i = 0; i < t; ++i) {
-        pos = (int)(distribution(generator) * (n - count - 1)) + count;
-        res[range[pos]] ^= 1;
-        std::swap(range[count], range[pos]);
-        ++count;
-    }
-    return res;
-}
-
-
-double* addError(const unsigned char *codeword, long t, long n) {
-    static std::default_random_engine generator;
-    static std::uniform_real_distribution<float> distribution(0, 1);
-    auto range = new int[n];
-    for (int i = 0; i < n; ++i) {
-        range[i] = i;
-    }
-    int count = 0;
-    int pos;
-    auto res = new double[n];
-
-    std::default_random_engine generatorD;
-    std::normal_distribution<double> distributionD(0.0, 1);
-    for (int i = 0; i < n; ++i) {
-        res[i] = codeword[i] ? 1 : -1;
-    }
-
-    for (int i = 0; i < t; ++i) {
-        pos = (int)(distribution(generator) * (n - count - 1)) + count;
-        res[range[pos]] += distributionD(generatorD);
-        std::swap(range[count], range[pos]);
-        ++count;
-    }
-    return res;
 }
 
 

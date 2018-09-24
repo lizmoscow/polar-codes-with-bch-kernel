@@ -160,7 +160,7 @@ void Decoder::dividePolynomial(unsigned long* first, int *size1, unsigned long* 
     }
 }
 
-//TODO: find out how that works
+//TODO: find out why xor works only this way
 unsigned long Decoder::eval(const unsigned long *poly, int size, unsigned long elem) const {
     unsigned long value = poly[size - 1];
     if (size < 2 ) {
@@ -175,7 +175,6 @@ unsigned long Decoder::eval(const unsigned long *poly, int size, unsigned long e
             else value = antilogarithms[sum - n];
         }
         value ^= poly[i];
-        //value = multiply(value, elem) ^ poly[i];
     }
     return value;
 }

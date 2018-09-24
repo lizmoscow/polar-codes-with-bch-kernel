@@ -12,7 +12,7 @@
 #include "../headers/KanekoKernelProcessor.h"
 #include "../headers/bchCoder.h"
 
-
+//#define COUNT
 
 KanekoKernelProcessor::KanekoKernelProcessor(long pw, long n, long t, long k, unsigned long *antilogarithms, unsigned long *logarithms, double signalToNoiseRatio):
         decoder(pw, n, t, k, antilogarithms, logarithms), n(n), t(t) {
@@ -173,7 +173,9 @@ void KanekoKernelProcessor::decode(unsigned char *res) {
         }
         decoder.alterSyndromPoly(err);
         success = decoder.decode(err, x);
+#ifdef COUNT
         ++decodingCount;
+#endif
         m = calcM();
         if (!i && success) m0 = m;
         else if (!i) firstDecodingSuccessful = false;
@@ -187,18 +189,23 @@ void KanekoKernelProcessor::decode(unsigned char *res) {
             }
             while (l >= calcT(j)) {
                 ++j;
-                ++comparisonCount;
-                ++summCount;
+#ifdef COUNT
+                //++comparisonCount;
+                //++summCount;
+#endif
             }
             T = j;
             j = 0;
-            ++comparisonCount;
+#ifdef COUNT
+            //++comparisonCount;
+#endif
         }
         ++i;
-        comparisonCount += n + 6;
-        summCount += n + 1;
+#ifdef COUNT
+        //comparisonCount += n + 6;
+        //summCount += n + 1;
+#endif
     }
-    state = calcL();
 }
 
 void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
@@ -210,8 +217,10 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
         alpha[i] = fabs(alpha[i]);
     }
     std::sort(alphaSorted, alphaSorted + n, myFunction);
-    summCount += 2 * n + 1;
-    comparisonCount += 2 * n + 1;
+#ifdef COUNT
+    //summCount += 2 * n + 1;
+    //comparisonCount += 2 * n + 1;
+#endif
 
     long j = 0;
     long i = 0;
@@ -228,7 +237,9 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
         }
         decoder.alterSyndromPoly(err);
         success = decoder.decode(err, x);
-        ++decodingCount;
+#ifdef COUNT
+        //++decodingCount;
+#endif
         m = calcM();
         if (!i && success) m0 = m;
         else if (!i) firstDecodingSuccessful = false;
@@ -242,18 +253,23 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
             }
             while (l >= calcT(j)) {
                 ++j;
-                ++comparisonCount;
-                ++summCount;
+#ifdef COUNT
+                //++comparisonCount;
+                //++summCount;
+#endif
             }
             T = j;
             j = 0;
-            ++comparisonCount;
+#ifdef COUNT
+            //++comparisonCount;
+#endif
         }
         ++i;
-        comparisonCount += n + 6;
-        summCount += n + 1;
+#ifdef COUNT
+        //comparisonCount += n + 6;
+        //summCount += n + 1;
+#endif
     }
-    state = calcL();
 }
 
 void KanekoKernelProcessor::decode(const unsigned char *answer, const double *word, unsigned char *res) {
@@ -315,46 +331,24 @@ void KanekoKernelProcessor::decode(const unsigned char *answer, const double *wo
         comparisonCount += n + 6;
         summCount += n + 1;
     }
-    state = calcL();
     //std::cout << "\n";
 }
 
-long KanekoKernelProcessor::getN() const {
-    return decoder.getN();
-}
+long KanekoKernelProcessor::getN() const { return decoder.getN(); }
 
-long KanekoKernelProcessor::getT() const {
-    return decoder.getT();
-}
+long KanekoKernelProcessor::getT() const { return decoder.getT(); }
 
-long KanekoKernelProcessor::getK() const {
-    return decoder.getK();
-}
+long KanekoKernelProcessor::getK() const { return decoder.getK(); }
 
-unsigned long KanekoKernelProcessor::getComparisonCount() const {
-    return comparisonCount;
-}
+unsigned long KanekoKernelProcessor::getComparisonCount() const { return comparisonCount; }
 
-unsigned long KanekoKernelProcessor::getSummCount() const {
-    return summCount;
-}
+unsigned long KanekoKernelProcessor::getSummCount() const { return summCount; }
 
-unsigned long KanekoKernelProcessor::getDecodingCount() const {
-    return decodingCount;
-}
+unsigned long KanekoKernelProcessor::getDecodingCount() const { return decodingCount; }
 
-void KanekoKernelProcessor::setDecodingCount(unsigned long c) {
-    decodingCount = c;
-}
+void KanekoKernelProcessor::setDecodingCount(unsigned long c) { decodingCount = c; }
 
-void KanekoKernelProcessor::setComparisonCount(unsigned long comparisonCount) {
-    KanekoKernelProcessor::comparisonCount = comparisonCount;
-}
+void KanekoKernelProcessor::setComparisonCount(unsigned long comparisonCount) { this -> comparisonCount = comparisonCount; }
 
-void KanekoKernelProcessor::setSummCount(unsigned long summCount) {
-    KanekoKernelProcessor::summCount = summCount;
-}
+void KanekoKernelProcessor::setSummCount(unsigned long summCount) { this -> summCount = summCount; }
 
-/*void* KanekoKernelProcessor::GetState(unsigned Stride) const {
-    return state;
-}*/
