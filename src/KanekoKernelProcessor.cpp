@@ -12,7 +12,7 @@
 #include "../headers/KanekoKernelProcessor.h"
 #include "../headers/bchCoder.h"
 
-//#define COUNT
+#define COUNT
 
 KanekoKernelProcessor::KanekoKernelProcessor(long pw, long n, long t, long k, unsigned long *antilogarithms, unsigned long *logarithms, double signalToNoiseRatio):
         decoder(pw, n, t, k, antilogarithms, logarithms), n(n), t(t) {
@@ -50,6 +50,7 @@ void KanekoKernelProcessor::calcError(long i) {
     }
 }
 
+//TODO: save alphaSoterd[j].second into a variable
 double KanekoKernelProcessor::calcRightSide() const {
     long border = (2 * t + 1) - (m + m0) / 2;
     double l = 0;
@@ -106,7 +107,7 @@ long KanekoKernelProcessor::calcM(const unsigned long *answer) {
 }
 
 
-double KanekoKernelProcessor::calcT(long j) {
+double KanekoKernelProcessor::calcT(uint64_t j) {
     long border = t - (m + m0) / 2;
     long i = 0;
     long k = 0;
@@ -124,7 +125,7 @@ double KanekoKernelProcessor::calcT(long j) {
     return l;
 }
 
-double KanekoKernelProcessor::calcT(const unsigned long *answer, long j) {
+double KanekoKernelProcessor::calcT(const unsigned long *answer, uint64_t j) {
     long mLocal = calcM(answer);
     long border = t - (mLocal + m0) / 2;
     long i = 0;
@@ -158,8 +159,9 @@ void KanekoKernelProcessor::set(const double *word) const {
 }
 
 void KanekoKernelProcessor::decode(unsigned char *res) {
-    long j = 0;
+    uint64_t j = 0;
     long i = 0;
+    //TODO: why T=LONG_MAX?
     uint64_t T = LONG_MAX;
     double l = 0;
     double l0 = DBL_MAX;
@@ -172,38 +174,37 @@ void KanekoKernelProcessor::decode(unsigned char *res) {
             err[k] ^= yH[k];
         }
         decoder.alterSyndromPoly(err);
-        success = decoder.decode(err, x);
+        if (!i && !success) firstDecodingSuccessful = false;
+        if (success) {
+            m = calcM();
+            if (!i || !firstDecodingSuccessful) m0 = m;
+            l = calcL();
+            //if (l == answerL) {static int count = 0; ++count; std::cout << count << " ";}
+            if (l < l0) {
+                memcpy(res, x, n * sizeof(*res));
+                l0 = l;
+                if (l < calcRightSide()) {
+                    return;
+                }
+                //TODO: j <=  n - 1 - t
+                while (l >= calcT(j) && j <  n - 1 - t) {
+                    ++j;
 #ifdef COUNT
-        ++decodingCount;
+                    ++comparisonCount;
+                    ++summCount;
 #endif
-        m = calcM();
-        if (!i && success) m0 = m;
-        else if (!i) firstDecodingSuccessful = false;
-        if (!firstDecodingSuccessful) m0 = m;
-        l = calcL();
-        if (success && l < l0) {
-            memcpy(res, x, n * sizeof(*res));
-            l0 = l;
-            if (l < calcRightSide()) {
-                return;
+                }
+                T = (j > J) ? J : j;
+                j = 0;
+#ifdef COUNT
+                ++comparisonCount;
+#endif
             }
-            while (l >= calcT(j)) {
-                ++j;
-#ifdef COUNT
-                //++comparisonCount;
-                //++summCount;
-#endif
-            }
-            T = j;
-            j = 0;
-#ifdef COUNT
-            //++comparisonCount;
-#endif
         }
         ++i;
 #ifdef COUNT
-        //comparisonCount += n + 6;
-        //summCount += n + 1;
+        comparisonCount += n + 6;
+        summCount += n + 1;
 #endif
     }
 }
@@ -218,18 +219,20 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
     }
     std::sort(alphaSorted, alphaSorted + n, myFunction);
 #ifdef COUNT
-    //summCount += 2 * n + 1;
-    //comparisonCount += 2 * n + 1;
+    summCount += 2 * n + 1;
+    comparisonCount += 2 * n + 1;
 #endif
 
-    long j = 0;
+    uint64_t j = 0;
     long i = 0;
+    //TODO: why T=LONG_MAX?
     uint64_t T = LONG_MAX;
     double l = 0;
     double l0 = DBL_MAX;
     bool success;
     bool firstDecodingSuccessful = true;
     decoder.findSyndromPoly(yH);
+    //TODO: i < (uint64_t(1) << T) - 1
     while (i < ((T == LONG_MAX) ? LONG_MAX : (uint64_t(1) << T))) {
         calcError(i);
         for (long k = 0; k < n; ++k) {
@@ -238,7 +241,7 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
         decoder.alterSyndromPoly(err);
         success = decoder.decode(err, x);
 #ifdef COUNT
-        //++decodingCount;
+        ++decodingCount;
 #endif
         m = calcM();
         if (!i && success) m0 = m;
@@ -254,24 +257,81 @@ void KanekoKernelProcessor::decode(const double *word, unsigned char *res) {
             while (l >= calcT(j)) {
                 ++j;
 #ifdef COUNT
-                //++comparisonCount;
-                //++summCount;
+                ++comparisonCount;
+                ++summCount;
 #endif
             }
             T = j;
             j = 0;
 #ifdef COUNT
-            //++comparisonCount;
+            ++comparisonCount;
 #endif
         }
         ++i;
 #ifdef COUNT
-        //comparisonCount += n + 6;
-        //summCount += n + 1;
+        comparisonCount += n + 6;
+        summCount += n + 1;
 #endif
     }
 }
 
+/*void KanekoKernelProcessor::decode(const unsigned char *answer, const double *word, unsigned char *res) {
+    for (int i = 0; i < n; ++i) {
+        alpha[i] = 2 * word[i] / pow(sd, 2);
+        alphaSorted[i].first = fabs(alpha[i]);
+        alphaSorted[i].second = i;
+        yH[i] = (alpha[i] <= 0.0) ? (unsigned char)0 : (unsigned char)1;
+        alpha[i] = fabs(alpha[i]);
+    }
+    std::sort(alphaSorted, alphaSorted + n, myFunction);
+
+    double answerL = calcL(answer);
+    uint64_t z = 0;
+    while (answerL >= calcT(z)) {
+        ++z;
+    }
+
+    uint64_t j = 0;
+    long i = 0;
+    uint64_t T = LONG_MAX;
+    double l = 0;
+    double l0 = DBL_MAX;
+    bool success;
+    bool firstDecodingSuccessful = true;
+    decoder.findSyndromPoly(yH);
+    while (i < ((T == LONG_MAX) ? LONG_MAX : (uint64_t(1) << T))) {
+        calcError(i);
+        for (long k = 0; k < n; ++k) {
+            err[k] ^= yH[k];
+        }
+        decoder.alterSyndromPoly(err);
+        success = decoder.decode(err, x);
+        if (!i && !success) firstDecodingSuccessful = false;
+        if (success) {
+            m = calcM();
+            if (!i || !firstDecodingSuccessful) m0 = m;
+            l = calcL();
+            //if (l == answerL) {static int count = 0; ++count; std::cout << count << " ";}
+            if (l < l0) {
+                memcpy(res, x, n * sizeof(*res));
+                l0 = l;
+                if (l < calcRightSide()) {
+                    return;
+                }
+                while (l >= calcT(j)) {
+                    ++j;
+                    assert(j<n);
+                }
+                T = j;
+                j = 0;
+            }
+        }
+        ++i;
+    }
+    std::cout << i << "\n";
+}*/
+
+//TODO: delete answer
 void KanekoKernelProcessor::decode(const unsigned char *answer, const double *word, unsigned char *res) {
     for (int i = 0; i < n; ++i) {
         alpha[i] = 2 * word[i] / pow(sd, 2);
@@ -281,57 +341,69 @@ void KanekoKernelProcessor::decode(const unsigned char *answer, const double *wo
         alpha[i] = fabs(alpha[i]);
     }
     std::sort(alphaSorted, alphaSorted + n, myFunction);
-    summCount += 2 * n + 1;
-    comparisonCount += 2 * n + 1;
 
     double answerL = calcL(answer);
-    long z;
+    /*uint64_t z = 0;
     while (answerL >= calcT(z)) {
         ++z;
-    }
+    }*/
 
     long j = 0;
     long i = 0;
-    uint64_t T = LONG_MAX;
+    //TODO: why T=10?
+    long T = n;
     double l = 0;
     double l0 = DBL_MAX;
     bool success;
     bool firstDecodingSuccessful = true;
     decoder.findSyndromPoly(yH);
-    while (i < ((T == LONG_MAX) ? LONG_MAX : (uint64_t(1) << T))) {
+    //TODO: i < (1 << T) - 1
+    while (i < (1 << T) - 1) {
         calcError(i);
         for (long k = 0; k < n; ++k) {
             err[k] ^= yH[k];
         }
         decoder.alterSyndromPoly(err);
-        success = decoder.decode(err, x);
+#ifdef COUNT
         ++decodingCount;
-        m = calcM();
-        if (!i && success) m0 = m;
-        else if (!i) firstDecodingSuccessful = false;
-        if (!firstDecodingSuccessful) m0 = m;
-        l = calcL();
-        //if (l == answerL) {static int count = 0; ++count; std::cout << count << " ";}
-        if (success && l < l0) {
-            memcpy(res, x, n * sizeof(*res));
-            l0 = l;
-            if (l < calcRightSide()) {
-                return;
-            }
-            while (l >= calcT(j)) {
-                ++j;
+#endif
+        success = decoder.decode(err, x);
+        if (!i && !success) firstDecodingSuccessful = false;
+        if (success) {
+            m = calcM();
+            if (!i || !firstDecodingSuccessful) m0 = m;
+            l = calcL();
+            //if (l == answerL) {static int count = 0; ++count; std::cout << count << " ";}
+            if (l < l0) {
+                memcpy(res, x, n * sizeof(*res));
+                l0 = l;
+                if (l < calcRightSide()) {
+                    return;
+                }
+                //TODO: j <=  n - 1 - t
+                while (l >= calcT(j) && j <=  n - 1 - t) {
+                    ++j;
+#ifdef COUNT
+                    ++comparisonCount;
+                    ++summCount;
+#endif
+                }
+                //TODO: why?
+                //T = (j > J) ? J : j;
+                T = j;
+                j = 0;
+#ifdef COUNT
                 ++comparisonCount;
-                ++summCount;
+#endif
             }
-            T = j;
-            j = 0;
-            ++comparisonCount;
         }
         ++i;
+#ifdef COUNT
         comparisonCount += n + 6;
         summCount += n + 1;
+#endif
     }
-    //std::cout << "\n";
+    //std::cout << i << "\n";
 }
 
 long KanekoKernelProcessor::getN() const { return decoder.getN(); }

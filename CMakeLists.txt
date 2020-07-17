@@ -6,11 +6,11 @@ set(kaneko_VERSION_MINOR 0)
 
 set(CMAKE_CXX_STANDARD 11)
 
-set(CMAKE_CXX_COMPILER /usr/local/Cellar/gcc/7.1.0/bin/gcc-7)
-set(CMAKE_CXX_FLAGS "-lstdc++ -o3")
+#set(CMAKE_CXX_COMPILER /usr/local/Cellar/gcc/7.1.0/bin/gcc-7)
+#set(CMAKE_CXX_FLAGS "-lstdc++ -o3")
 
 configure_file (
-        "src/KanekoConfig.h.in"
+        "headers/KanekoConfig.h.in"
         "${PROJECT_BINARY_DIR}/KanekoConfig.h"
 )
 

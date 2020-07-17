@@ -9,8 +9,16 @@
 #include <chrono>
 #include "../headers/bchCoder.h"
 
+//#define RANDOM
+
+#ifdef RANDOM
 auto seed = std::chrono::system_clock::now().time_since_epoch().count();
 std::default_random_engine generator(seed);
+#endif
+
+#ifndef RANDOM
+std::default_random_engine generator;
+#endif
 std::uniform_int_distribution<unsigned short> distribution(0, 1);
 
 

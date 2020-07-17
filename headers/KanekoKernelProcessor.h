@@ -31,13 +31,16 @@ private:
     unsigned long summCount{0};
     unsigned long decodingCount{0};
 
+    //TODO: why J=15?
+    static const long J = 15;
+
     void calcError(long i);
     long calcM();
     long calcM(const unsigned long *answer);
     double calcL() const;
     double calcRightSide() const;
-    double calcT(long j);
-    double calcT(const unsigned long *answer, long j);
+    double calcT(uint64_t j);
+    double calcT(const unsigned long *answer, uint64_t j);
 
 public:
 

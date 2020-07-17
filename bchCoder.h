@@ -6,6 +6,7 @@
 #define BCH_BCHCODER_H
 
 #include <algorithm>
+#include "Kernel.h"
 
 void findMinimalPolynomial(int i, int power, const unsigned long * fieldElements, int *size, unsigned char* res);
 
@@ -13,7 +14,7 @@ bool comparePoly(const unsigned char* poly1, int size1, const unsigned char* pol
 
 unsigned char* multiplyPolynomials(const unsigned char* first, int size1, const unsigned char* second, int size2, int *sizeRes = nullptr);
 
-void multiplyPolynomials(const unsigned char* first, int size1, const unsigned char* second, int size2, unsigned char* res, int *sizeRes = nullptr);
+void multiplyPolynomials(const unsigned char* first, int size1, const unsigned char* second, int size2, unsigned char* res, int *sizeRes = nullptr, int offset = 0);
 
 unsigned char* dividePolynomial(const unsigned char* first, int size1, const unsigned char* second, int size2, int *size, bool needRemainder);
 
@@ -43,8 +44,21 @@ void printVec(std::ofstream& out, const double* poly, int size);
 
 void printMatrix(unsigned char** const matrix, int sizeI, int sizeJ = -1);
 
+void printMatrix(const unsigned char* const matrix, int sizeI, int sizeJ = -1);
+
 void printMatrix(std::ofstream& out, unsigned char** const matrix, int sizeI, int sizeJ = -1);
 
-void makeMatrix(int power, const unsigned long * fieldElements, unsigned char** matrix);
+void printMatrix(std::ofstream& out, const unsigned char* const matrix, int sizeI, int sizeJ = -1);
+
+void makeMatrix(int power, const unsigned long * fieldElements, unsigned char* matrix);
+
+void swapColumns(int power, const unsigned long * fieldElements, unsigned char* matrix, tBit* newMatrix, unsigned int length, unsigned int sectionSize, unsigned int codeLength);
+
+void randomSwapColumns(int power, unsigned char* matrix,
+                    tBit* newMatrix, unsigned int length, unsigned int sectionSize, unsigned int codeLength);
+
+bool increase(int power, unsigned char* b);
+
+void randomInvertibleMatrix(int power, unsigned char* l, unsigned char* u, unsigned char* b);
 
 #endif //BCH_BCHCODER_H

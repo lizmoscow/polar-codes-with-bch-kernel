@@ -11,13 +11,13 @@
 #include "../headers/bchCoder.h"
 
 //#define DEBUG
-//#define COUNT
+#define COUNT
 
 void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned char *g, unsigned long gSize, long p, long e, double maxSTNR = 5.0) {
 
     setlocale(LC_ALL, "Russian");
 
-    int count = 0, countErr = 0;
+    int count = 0, countErr = 0, countE = 0;
     double standardDiviation;
     auto info = new unsigned char[decoder.getK()];
     auto res = new unsigned char[decoder.getN()];
@@ -49,7 +49,7 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
 
 
 #ifndef DEBUG
-            decoder.decode(err, decoded);
+            decoder.decode(res, err, decoded);
 #endif
 
 #ifdef DEBUG
@@ -66,6 +66,11 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
             if (!comparePoly(res, decoder.getN(), decoded, decoder.getN())) {
                 ++countErr;
             }
+            for (int i = 0; i < decoder.getN(); ++i) {
+                if (res[i] != decoded[i]) {
+                    countE++;
+                }
+            }
             ++count;
 #ifdef COUNT
             ++wordCount;
@@ -73,6 +78,7 @@ void fun(const std::string& file, KanekoKernelProcessor& decoder, const unsigned
         }
 
         fout << stnr << "," << ((double)countErr)/count
+                     << "," << ((double)countE)/count/decoder.getN()
 #ifdef COUNT
                      << "," << ((double) decoder.getDecodingCount()) / wordCount
                      << "," << ((double) decoder.getComparisonCount()) / wordCount

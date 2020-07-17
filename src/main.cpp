@@ -113,7 +113,7 @@ int main (int argc, char* argv[]) {
             //decoding
             KanekoKernelProcessor decoder(power, n, t, k, antilogarithms, logarithms, 0.5);
             auto decoded = new unsigned char[n];
-            decoder.decode(err, decoded);
+            decoder.decode(res, err, decoded);
 
             //checking the result
             printVec(decoded, n);
